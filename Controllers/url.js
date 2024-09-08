@@ -11,6 +11,13 @@ export const urlShort = async (req, res) => {
   const longUrl = req.body.longUrl;
   const shortCode = shortid.generate();
 
+  // Validate the long URL (basic validation)
+  try {
+    new URL(longUrl); // This throws an error if the URL is invalid
+  } catch (_) {
+    return res.status(400).send("Invalid URL");
+  }
+
   // Generate short URL using the application’s base domain
   const shortUrl = `${BASE_URL}/${shortCode}`;
 
@@ -36,9 +43,11 @@ export const getOriginalUrl = async (req, res) => {
       const urlRecord = await Url.findOne({ shortCode });
   
       if (urlRecord) {
-        // Redirect to the long URL
+        // Log the found URL and redirect
+        console.log('Redirecting to:', urlRecord.longUrl);
         res.redirect(urlRecord.longUrl);
       } else {
+        console.log('URL not found for shortCode:', shortCode);
         res.status(404).send("URL not found");
       }
     } catch (error) {
@@ -46,3 +55,4 @@ export const getOriginalUrl = async (req, res) => {
       res.status(500).send("Internal Server Error");
     }
   };
+  
